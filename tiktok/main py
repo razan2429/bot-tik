@@ -1,0 +1,47 @@
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+import requests
+
+TOKEN = '8029070620:AAF9ISFXzaeZrRKZGthHOVhALD6AWWBMBeM'
+
+def start(update, context):
+    update.message.reply_text("هلا حب! 🌸\nأرسل رابط فيديو TikTok وراح أرجع لك الفيديو بدون علامة مائية 💃")
+
+def get_tiktok_video(url):
+    try:
+        api = "https://tikwm.com/api/"
+        params = {'url': url}
+        headers = {
+            "User-Agent": "Mozilla/5.0"
+        }
+        res = requests.get(api, params=params, headers=headers)
+        data = res.json()
+        if data.get("data") and data["data"].get("play"):
+            return data["data"]["play"]
+        else:
+            return None
+    except Exception as e:
+        print("خطأ أثناء تحميل الفيديو:", e)
+        return None
+
+def handle_message(update, context):
+    url = update.message.text
+    update.message.reply_text("ثواني حبي، دا أحمل الفيديو 🎬...")
+
+    video_url = get_tiktok_video(url)
+    if video_url:
+        update.message.reply_video(video_url)
+    else:
+        update.message.reply_text("ما قدرت أجيب الفيديو 😢 تأكد من الرابط أو جرب مره ثانية.")
+
+def main():
+    updater = Updater(TOKEN, use_context=True)
+    dp = updater.dispatcher
+
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
+
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
